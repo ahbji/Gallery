@@ -7,8 +7,8 @@
     android:layout_margin="4dp"
     android:orientation="vertical">
 
-    <io.supercharge.shimmerlayout.ShimmerLayout
-        android:id="@+id/shimmerLayoutCell"
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/shimmerViewCell"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -17,8 +17,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:adjustViewBounds="true"
+            android:contentDescription="@string/todo"
             android:scaleType="centerCrop"
-            tools:srcCompat="@tools:sample/avatars"
-            android:contentDescription="@string/todo" />
-    </io.supercharge.shimmerlayout.ShimmerLayout>
+            tools:srcCompat="@tools:sample/avatars" />
+    </com.facebook.shimmer.ShimmerFrameLayout>
 </androidx.cardview.widget.CardView>

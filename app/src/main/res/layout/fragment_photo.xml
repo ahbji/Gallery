@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<io.supercharge.shimmerlayout.ShimmerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.facebook.shimmer.ShimmerFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/shimmerLayoutPhoto"
     android:layout_width="match_parent"
@@ -12,4 +12,4 @@
         android:layout_height="match_parent"
         android:adjustViewBounds="true"
         tools:src="@tools:sample/avatars" />
-</io.supercharge.shimmerlayout.ShimmerLayout>
+</com.facebook.shimmer.ShimmerFrameLayout>

@@ -12,11 +12,12 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import io.supercharge.shimmerlayout.ShimmerLayout
+import com.facebook.shimmer.Shimmer
+import com.facebook.shimmer.ShimmerFrameLayout
 
 class PhotoFragment : Fragment() {
     private lateinit var photoView: ImageView
-    private lateinit var shimmerLayoutPhoto: ShimmerLayout
+    private lateinit var shimmerLayoutPhoto: ShimmerFrameLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,20 +26,21 @@ class PhotoFragment : Fragment() {
         val root = inflater.inflate(R.layout.fragment_photo, container, false)
         shimmerLayoutPhoto = root.findViewById(R.id.shimmerLayoutPhoto)
         photoView = root.findViewById(R.id.photoView)
-        shimmerLayoutPhoto.apply {
-            setShimmerColor(0x55FFFFFF)
-            setShimmerAngle(0)
-            startShimmerAnimation()
-        }
         return root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val shimmerBuilder = Shimmer.AlphaHighlightBuilder()
         shimmerLayoutPhoto.apply {
-            setShimmerColor(0x55FFFFFF)
-            setShimmerAngle(0)
-            startShimmerAnimation()
+            setShimmer(
+                shimmerBuilder
+                    .setBaseAlpha(0.1f)
+                    .setDropoff(0.3f)
+                    .setTilt(0f)
+                    .build()
+            )
+            startShimmer()
         }
 
         Glide.with(requireContext())
@@ -61,7 +63,7 @@ class PhotoFragment : Fragment() {
                     dataSource: DataSource?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    return false.also { shimmerLayoutPhoto.stopShimmerAnimation() }
+                    return false.also { shimmerLayoutPhoto.setShimmer(null) }
                 }
 
             })

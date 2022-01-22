@@ -15,7 +15,8 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import io.supercharge.shimmerlayout.ShimmerLayout
+import com.facebook.shimmer.Shimmer
+import com.facebook.shimmer.ShimmerFrameLayout
 
 class GalleryAdapter: ListAdapter<PhotoItem, MyViewHolder>(DIFFCALLBACK) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
@@ -30,10 +31,17 @@ class GalleryAdapter: ListAdapter<PhotoItem, MyViewHolder>(DIFFCALLBACK) {
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.shimmerLayoutCell.apply {
-            setShimmerColor(0x55FFFFFF)
-            setShimmerAngle(0)
-            startShimmerAnimation()
+
+        val shimmerBuilder = Shimmer.AlphaHighlightBuilder()
+        holder.shimmerViewCell.apply {
+            setShimmer(
+                shimmerBuilder
+                    .setBaseAlpha(0.1f)
+                    .setDropoff(0.3f)
+                    .setTilt(0f)
+                    .build()
+            )
+            startShimmer()
         }
 
         Glide.with(holder.itemView)
@@ -56,7 +64,9 @@ class GalleryAdapter: ListAdapter<PhotoItem, MyViewHolder>(DIFFCALLBACK) {
                     dataSource: DataSource?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    return false.also { holder.shimmerLayoutCell.stopShimmerAnimation() }
+                    return false.also {
+                        holder.shimmerViewCell.setShimmer(null)
+                    }
                 }
 
             })
@@ -77,6 +87,6 @@ class GalleryAdapter: ListAdapter<PhotoItem, MyViewHolder>(DIFFCALLBACK) {
 
 
 class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    val shimmerLayoutCell: ShimmerLayout = itemView.findViewById(R.id.shimmerLayoutCell)
+    val shimmerViewCell: ShimmerFrameLayout = itemView.findViewById(R.id.shimmerViewCell)
     val imageView: ImageView = itemView.findViewById(R.id.imageView)
 }

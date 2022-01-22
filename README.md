@@ -2,15 +2,15 @@
 
 ShimmerLayout 用于为 PlaceHolder 设置一个加载中动画。
 
-![](https://github.com/team-supercharge/ShimmerLayout/raw/master/shimmerlayout.gif?raw=true)
+![](http://facebook.github.io/shimmer-android/images/shimmer-small.gif)
 
 ## 添加依赖
 ```
-implementation 'io.supercharge:shimmerlayout:2.1.0'
+implementation 'com.facebook.shimmer:shimmer:0.5.0'
 ```
 ## 在 UI 中使用
 ```xml
-<io.supercharge.shimmerlayout.ShimmerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.facebook.shimmer.ShimmerFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/shimmerLayoutPhoto"
     android:layout_width="match_parent"
@@ -23,7 +23,7 @@ implementation 'io.supercharge:shimmerlayout:2.1.0'
         android:layout_height="match_parent"
         android:adjustViewBounds="true"
         tools:src="@tools:sample/avatars" />
-</io.supercharge.shimmerlayout.ShimmerLayout>
+</com.facebook.shimmer.ShimmerFrameLayout>
 ```
 
 ## 在 Fragment UIController 中使用
@@ -31,25 +31,18 @@ implementation 'io.supercharge:shimmerlayout:2.1.0'
 ```kotlin
 class PhotoFragment : Fragment() {
     ...
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        ...
-        shimmerLayoutPhoto.apply {
-            setShimmerColor(0x55FFFFFF)
-            setShimmerAngle(0)
-            startShimmerAnimation()
-        }
-        ...
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val shimmerBuilder = Shimmer.AlphaHighlightBuilder()
         shimmerLayoutPhoto.apply {
-            setShimmerColor(0x55FFFFFF)
-            setShimmerAngle(0)
-            startShimmerAnimation()
+            setShimmer(
+                shimmerBuilder
+                    .setBaseAlpha(0.1f)
+                    .setDropoff(0.3f)
+                    .setTilt(0f)
+                    .build()
+            )
+            startShimmer()
         }
 
         Glide.with(requireContext())
@@ -64,7 +57,7 @@ class PhotoFragment : Fragment() {
                 override fun onResourceReady(
                     ...
                 ): Boolean {
-                    return false.also { shimmerLayoutPhoto.stopShimmerAnimation() }
+                    return false.also { shimmerLayoutPhoto.setShimmer(null) }
                 }
 
             })
@@ -79,10 +72,15 @@ class PhotoFragment : Fragment() {
 class GalleryAdapter: ListAdapter<PhotoItem, MyViewHolder>(DIFFCALLBACK) {
     ...
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.shimmerLayoutCell.apply {
-            setShimmerColor(0x55FFFFFF)
-            setShimmerAngle(0)
-            startShimmerAnimation()
+        holder.shimmerViewCell.apply {
+            setShimmer(
+                shimmerBuilder
+                    .setBaseAlpha(0.1f)
+                    .setDropoff(0.3f)
+                    .setTilt(0f)
+                    .build()
+            )
+            startShimmer()
         }
 
         Glide.with(holder.itemView)
@@ -97,7 +95,7 @@ class GalleryAdapter: ListAdapter<PhotoItem, MyViewHolder>(DIFFCALLBACK) {
                 override fun onResourceReady(
                     ...
                 ): Boolean {
-                    return false.also { holder.shimmerLayoutCell.stopShimmerAnimation() }
+                    return false.also { holder.shimmerViewCell.setShimmer(null) }
                 }
 
             })
