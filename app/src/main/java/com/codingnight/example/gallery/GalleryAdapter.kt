@@ -32,11 +32,13 @@ class GalleryAdapter: ListAdapter<PhotoItem, MyViewHolder>(DIFFCALLBACK) {
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
-        val shimmerBuilder = Shimmer.AlphaHighlightBuilder()
+        val shimmerBuilder = Shimmer.ColorHighlightBuilder()
         holder.shimmerViewCell.apply {
             setShimmer(
                 shimmerBuilder
-                    .setBaseAlpha(0.1f)
+                    .setHighlightColor(0x55FFFFFF)
+                    .setBaseAlpha(1f)
+                    .setBaseColor(0xD9D9D9)
                     .setDropoff(0.3f)
                     .setTilt(0f)
                     .build()

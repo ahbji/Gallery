@@ -31,11 +31,13 @@ class PhotoFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val shimmerBuilder = Shimmer.AlphaHighlightBuilder()
+        val shimmerBuilder = Shimmer.ColorHighlightBuilder()
         shimmerLayoutPhoto.apply {
             setShimmer(
                 shimmerBuilder
-                    .setBaseAlpha(0.1f)
+                    .setHighlightColor(0x55FFFFFF)
+                    .setBaseAlpha(1f)
+                    .setBaseColor(0xD9D9D9)
                     .setDropoff(0.3f)
                     .setTilt(0f)
                     .build()
@@ -46,7 +48,7 @@ class PhotoFragment : Fragment() {
         Glide.with(requireContext())
             .load(arguments?.getParcelable<PhotoItem>("PHOTO")?.fullUrl)
             .placeholder(R.drawable.ic_photo_gray_24dp)
-            .listener(object : RequestListener<Drawable>{
+            .listener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(
                     e: GlideException?,
                     model: Any?,
@@ -63,7 +65,10 @@ class PhotoFragment : Fragment() {
                     dataSource: DataSource?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    return false.also { shimmerLayoutPhoto.setShimmer(null) }
+                    return false.also {
+                        shimmerLayoutPhoto.setShimmer(null)
+//                        shimmerLayoutPhoto.stopShimmer()
+                    }
                 }
 
             })
