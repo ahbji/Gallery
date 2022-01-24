@@ -2,11 +2,13 @@ package com.codingnight.example.gallery
 
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -15,24 +17,28 @@ import com.bumptech.glide.request.target.Target
 import com.facebook.shimmer.Shimmer
 import com.facebook.shimmer.ShimmerFrameLayout
 
-class PhotoFragment : Fragment() {
-    private lateinit var photoView: ImageView
-    private lateinit var shimmerLayoutPhoto: ShimmerFrameLayout
+class PagerPhotoListAdapter : ListAdapter<PhotoItem, PagerPhotoViewHolder>(DiffCallback) {
+    object DiffCallback : DiffUtil.ItemCallback<PhotoItem>() {
+        override fun areItemsTheSame(oldItem: PhotoItem, newItem: PhotoItem): Boolean {
+            return oldItem === newItem
+        }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val root = inflater.inflate(R.layout.fragment_photo, container, false)
-        shimmerLayoutPhoto = root.findViewById(R.id.shimmerLayoutPhoto)
-        photoView = root.findViewById(R.id.photoView)
-        return root
+        override fun areContentsTheSame(oldItem: PhotoItem, newItem: PhotoItem): Boolean {
+            return oldItem.photoId == newItem.photoId
+        }
+
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PagerPhotoViewHolder {
+        LayoutInflater.from(parent.context).inflate(R.layout.pager_photo_view,parent, false).apply {
+            return PagerPhotoViewHolder(this)
+        }
+    }
+
+    override fun onBindViewHolder(holder: PagerPhotoViewHolder, position: Int) {
+        val photoItem = getItem(position)
         val shimmerBuilder = Shimmer.ColorHighlightBuilder()
-        shimmerLayoutPhoto.apply {
+        holder.shimmerViewCell.apply {
             setShimmer(
                 shimmerBuilder
                     .setHighlightColor(0x55FFFFFF)
@@ -44,10 +50,9 @@ class PhotoFragment : Fragment() {
             )
             startShimmer()
         }
-
-        Glide.with(requireContext())
-            .load(arguments?.getParcelable<PhotoItem>("PHOTO")?.fullUrl)
-            .placeholder(R.drawable.ic_photo_gray_24dp)
+        Glide.with(holder.itemView)
+            .load(photoItem.fullUrl)
+            .placeholder(R.drawable.photo_placeholder)
             .listener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(
                     e: GlideException?,
@@ -66,12 +71,16 @@ class PhotoFragment : Fragment() {
                     isFirstResource: Boolean
                 ): Boolean {
                     return false.also {
-                        shimmerLayoutPhoto.setShimmer(null)
-//                        shimmerLayoutPhoto.stopShimmer()
+                        holder.shimmerViewCell.setShimmer(null)
                     }
                 }
 
             })
-            .into(photoView)
+            .into(holder.imageView)
     }
+}
+
+class PagerPhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    val shimmerViewCell: ShimmerFrameLayout = itemView.findViewById(R.id.shimmerLayoutPhoto)
+    val imageView: ImageView = itemView.findViewById(R.id.photoView)
 }

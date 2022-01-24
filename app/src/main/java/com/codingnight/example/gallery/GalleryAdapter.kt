@@ -18,20 +18,25 @@ import com.bumptech.glide.request.target.Target
 import com.facebook.shimmer.Shimmer
 import com.facebook.shimmer.ShimmerFrameLayout
 
-class GalleryAdapter: ListAdapter<PhotoItem, MyViewHolder>(DIFFCALLBACK) {
+class GalleryAdapter : ListAdapter<PhotoItem, MyViewHolder>(DIFFCALLBACK) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val holder = MyViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.gallery_cell,parent,false))
+        val holder = MyViewHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.gallery_cell, parent, false)
+        )
         holder.itemView.setOnClickListener {
             Bundle().apply {
-                putParcelable("PHOTO",getItem(holder.adapterPosition))
-                holder.itemView.findNavController().navigate(R.id.action_galleryFragment_to_photoFragment,this)
+                putParcelableArrayList("PHOTO_LIST", ArrayList(currentList))
+                putInt("PHOTO_POSITION",holder.adapterPosition)
+                holder.itemView.findNavController()
+                    .navigate(R.id.action_galleryFragment_to_pagerPhotoFragment, this)
             }
         }
         return holder
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-
+        val photoItem = getItem(position)
+        holder.imageView.layoutParams.height = photoItem.photoHeight
         val shimmerBuilder = Shimmer.ColorHighlightBuilder()
         holder.shimmerViewCell.apply {
             setShimmer(
@@ -47,8 +52,8 @@ class GalleryAdapter: ListAdapter<PhotoItem, MyViewHolder>(DIFFCALLBACK) {
         }
 
         Glide.with(holder.itemView)
-            .load(getItem(position).previewUrl)
-            .placeholder(R.drawable.ic_photo_gray_24dp)
+            .load(photoItem.fullUrl)
+            .placeholder(R.drawable.photo_placeholder)
             .listener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(
                     e: GlideException?,
@@ -75,7 +80,7 @@ class GalleryAdapter: ListAdapter<PhotoItem, MyViewHolder>(DIFFCALLBACK) {
             .into(holder.imageView)
     }
 
-    object DIFFCALLBACK: DiffUtil.ItemCallback<PhotoItem>() {
+    object DIFFCALLBACK : DiffUtil.ItemCallback<PhotoItem>() {
         override fun areItemsTheSame(oldItem: PhotoItem, newItem: PhotoItem): Boolean {
             return oldItem === newItem
         }

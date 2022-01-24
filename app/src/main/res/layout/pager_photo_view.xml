@@ -3,10 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/shimmerLayoutPhoto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".PhotoFragment" >
+    android:layout_height="match_parent" >
 
-    <uk.co.senab.photoview.PhotoView
+<!--    <uk.co.senab.photoview.PhotoView-->
+<!--        android:id="@+id/photoView"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:adjustViewBounds="true"-->
+<!--        tools:src="@tools:sample/avatars" />-->
+    <ImageView
         android:id="@+id/photoView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
