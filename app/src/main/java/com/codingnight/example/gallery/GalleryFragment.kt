@@ -5,8 +5,8 @@ import android.os.Handler
 import android.os.Looper
 import android.view.*
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -14,8 +14,9 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 class GalleryFragment : Fragment() {
 
     private lateinit var swipeLayoutGallery: SwipeRefreshLayout
-    private lateinit var galleryViewModel: GalleryViewModel
     private lateinit var recyclerView: RecyclerView
+
+    private val galleryViewModel by viewModels<GalleryViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,7 +32,7 @@ class GalleryFragment : Fragment() {
         when(item.itemId) {
             R.id.swipeIndicator -> {
                 swipeLayoutGallery.isRefreshing = true
-                Handler(Looper.myLooper()!!).postDelayed({galleryViewModel.fetchData() },1000)
+                Handler(Looper.myLooper()!!).postDelayed({galleryViewModel.resetQuery() },1000)
             }
         }
         return super.onOptionsItemSelected(item)
@@ -50,19 +51,12 @@ class GalleryFragment : Fragment() {
             adapter = galleryAdapter
             layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         }
-        galleryViewModel = ViewModelProvider(
-            this,
-            ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
-        ).get(GalleryViewModel::class.java)
-        galleryViewModel.photoListLive.observe(viewLifecycleOwner, {
+        galleryViewModel.pageListLiveData.observe(viewLifecycleOwner, Observer {
             galleryAdapter.submitList(it)
             swipeLayoutGallery.isRefreshing = false
         })
-
-        galleryViewModel.photoListLive.value ?: galleryViewModel.fetchData()
-
         swipeLayoutGallery.setOnRefreshListener {
-            galleryViewModel.fetchData()
+            Handler(Looper.myLooper()!!).postDelayed({galleryViewModel.resetQuery() },1000)
         }
     }
 }

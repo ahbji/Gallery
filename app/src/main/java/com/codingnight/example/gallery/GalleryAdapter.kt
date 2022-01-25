@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.navigation.findNavController
+import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -19,15 +19,15 @@ import com.bumptech.glide.request.target.Target
 import com.facebook.shimmer.Shimmer
 import com.facebook.shimmer.ShimmerFrameLayout
 
-class GalleryAdapter : ListAdapter<PhotoItem, MyViewHolder>(DIFFCALLBACK) {
+class GalleryAdapter : PagedListAdapter<PhotoItem, MyViewHolder>(DIFFCALLBACK) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val holder = MyViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.gallery_cell, parent, false)
         )
         holder.itemView.setOnClickListener {
             Bundle().apply {
-                putParcelableArrayList("PHOTO_LIST", ArrayList(currentList))
-                putInt("PHOTO_POSITION",holder.adapterPosition)
+                putParcelableArrayList("PHOTO_LIST", ArrayList(currentList!!))
+                putInt("PHOTO_POSITION", holder.adapterPosition)
                 holder.itemView.findNavController()
                     .navigate(R.id.action_galleryFragment_to_pagerPhotoFragment, this)
             }
@@ -36,7 +36,7 @@ class GalleryAdapter : ListAdapter<PhotoItem, MyViewHolder>(DIFFCALLBACK) {
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        val photoItem = getItem(position)
+        val photoItem = getItem(position) ?: return
         with(holder) {
             imageView.layoutParams.height = photoItem.photoHeight
             textViewUser.text = photoItem.photoUser
