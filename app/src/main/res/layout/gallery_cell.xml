@@ -17,8 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="TextView"
-            android:textSize="10sp"
+            android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="@+id/imageView2"
             app:layout_constraintStart_toEndOf="@+id/imageView2"
             app:layout_constraintTop_toTopOf="@+id/imageView2" />
@@ -31,7 +30,8 @@
             android:layout_marginBottom="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/ic_thumb_up" />
+            app:srcCompat="@drawable/ic_thumb_up"
+            android:contentDescription="@string/todo" />
 
         <TextView
             android:id="@+id/textViewUser"
@@ -39,7 +39,6 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginBottom="8dp"
-            android:text="TextView"
             app:layout_constraintBottom_toTopOf="@+id/imageView2"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -58,7 +57,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:adjustViewBounds="true"
-                android:contentDescription="TODO"
+                android:contentDescription="@string/todo"
                 android:scaleType="centerCrop"
                 tools:srcCompat="@tools:sample/avatars" />
         </com.facebook.shimmer.ShimmerFrameLayout>
@@ -71,15 +70,15 @@
             app:layout_constraintBottom_toBottomOf="@+id/textViewLikes"
             app:layout_constraintStart_toEndOf="@+id/textViewLikes"
             app:layout_constraintTop_toTopOf="@+id/textViewLikes"
-            app:srcCompat="@drawable/ic_bookmark" />
+            app:srcCompat="@drawable/ic_bookmark"
+            android:contentDescription="@string/todo" />
 
         <TextView
             android:id="@+id/textViewCollections"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="TextView"
-            android:textSize="10sp"
+            android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="@+id/imageView3"
             app:layout_constraintStart_toEndOf="@+id/imageView3"
             app:layout_constraintTop_toTopOf="@+id/imageView3" />

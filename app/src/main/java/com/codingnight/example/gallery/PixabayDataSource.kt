@@ -10,7 +10,6 @@ import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.google.gson.Gson
 
-
 enum class NetworkStatus {
     INITIAL_LOADING,
     LOADING,
@@ -41,7 +40,7 @@ class PixabayDataSource(private val context: Context) : PageKeyedDataSource<Int,
         StringRequest(
             Request.Method.GET,
             url,
-            { it ->
+            {
                 callback.onResult(
                     Gson().fromJson(it, Pixabay::class.java).hits.toList(),
                     null,

@@ -106,10 +106,10 @@ class GalleryAdapter(private val viewModel: GalleryViewModel) : PagedListAdapter
 
 class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val shimmerViewCell: ShimmerFrameLayout = itemView.findViewById(R.id.shimmerViewCell)
-    val imageView: ImageView = itemView.findViewById(R.id.imageView)
-    val textViewUser: TextView = itemView.findViewById(R.id.textViewUser)
-    val textViewLikes: TextView = itemView.findViewById(R.id.textViewLikes)
-    val textViewCollections: TextView = itemView.findViewById(R.id.textViewCollections)
+    private val imageView: ImageView = itemView.findViewById(R.id.imageView)
+    private val textViewUser: TextView = itemView.findViewById(R.id.textViewUser)
+    private val textViewLikes: TextView = itemView.findViewById(R.id.textViewLikes)
+    private val textViewCollections: TextView = itemView.findViewById(R.id.textViewCollections)
 
     companion object {
         fun newInstance(parent: ViewGroup): PhotoViewHolder {
@@ -170,8 +170,8 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 }
 
 class FooterViewHolder(itemView: View, val context: Context) : RecyclerView.ViewHolder(itemView) {
-    val progressBar: ProgressBar = itemView.findViewById(R.id.progressBar)
-    val textView: TextView = itemView.findViewById(R.id.textView)
+    private val progressBar: ProgressBar = itemView.findViewById(R.id.progressBar)
+    private val textView: TextView = itemView.findViewById(R.id.textView)
 
     companion object {
         fun newInstance(parent: ViewGroup): FooterViewHolder {
