@@ -1,11 +1,13 @@
 package com.codingnight.example.gallery
 
+import android.content.Context
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
@@ -20,7 +22,16 @@ import com.bumptech.glide.request.target.Target
 import com.facebook.shimmer.Shimmer
 import com.facebook.shimmer.ShimmerFrameLayout
 
-class GalleryAdapter : ListAdapter<PhotoItem, RecyclerView.ViewHolder>(DIFFCALLBACK) {
+class GalleryAdapter(private val viewModel: GalleryViewModel) :
+    ListAdapter<PhotoItem, RecyclerView.ViewHolder>(DIFFCALLBACK) {
+
+    private lateinit var mContext: Context
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        mContext = recyclerView.context
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val holder: RecyclerView.ViewHolder
         if (viewType == NORMAL_VIEW_TYPE) {
@@ -37,10 +48,13 @@ class GalleryAdapter : ListAdapter<PhotoItem, RecyclerView.ViewHolder>(DIFFCALLB
             }
         } else {
             holder = FooterViewHolder(
-                LayoutInflater.from(parent.context).inflate(R.layout.gallery_footer, parent, false).also {
-                    (it.layoutParams as StaggeredGridLayoutManager.LayoutParams).isFullSpan = true
-                }
-            )
+                LayoutInflater.from(parent.context).inflate(R.layout.gallery_footer, parent, false))
+            (holder.itemView.layoutParams as StaggeredGridLayoutManager.LayoutParams).isFullSpan = true
+            holder.itemView.setOnClickListener {
+                holder.progressBar.visibility = View.VISIBLE
+                holder.textView.text = mContext.getString(R.string.loading)
+                viewModel.fetchData()
+            }
         }
         return holder
     }
@@ -61,8 +75,30 @@ class GalleryAdapter : ListAdapter<PhotoItem, RecyclerView.ViewHolder>(DIFFCALLB
         const val FOOTER_VIEW_TYPE = 1
     }
 
+    var footerViewStatus = DATA_STATUS_CAN_LOAD_MORE
+
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (position == itemCount - 1) {
+            holder as FooterViewHolder
+            with(holder) {
+                when (footerViewStatus) {
+                    DATA_STATUS_CAN_LOAD_MORE -> {
+                        progressBar.visibility = View.VISIBLE
+                        textView.text = mContext.getString(R.string.loading)
+                        itemView.isClickable = false
+                    }
+                    DATA_STATUS_NO_MORE -> {
+                        progressBar.visibility = View.GONE
+                        textView.text = mContext.getString(R.string.load_complete)
+                        itemView.isClickable = false
+                    }
+                    DATA_STATUS_NETWORK_ERROR -> {
+                        progressBar.visibility = View.GONE
+                        textView.text = mContext.getString(R.string.net_error_with_click)
+                        itemView.isClickable = true
+                    }
+                }
+            }
             return
         }
         val photoItem = getItem(position)
@@ -138,4 +174,6 @@ class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 }
 
 class FooterViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    val progressBar: ProgressBar = itemView.findViewById(R.id.progressBar)
+    val textView: TextView = itemView.findViewById(R.id.textView)
 }
