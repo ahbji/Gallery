@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.get
@@ -51,7 +52,7 @@ class PagerPhotoFragment : Fragment() {
             submitList(photoList)
         }
 
-        viewPager.registerOnPageChangeCallback(object: ViewPager2.OnPageChangeCallback() {
+        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
                 if (photoList != null) {
@@ -68,7 +69,8 @@ class PagerPhotoFragment : Fragment() {
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                requestPermissions(
+                ActivityCompat.requestPermissions(
+                    requireActivity(),
                     arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                     REQUEST_WRITE_EXTERNAL_STORAGE
                 )
@@ -85,7 +87,6 @@ class PagerPhotoFragment : Fragment() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             REQUEST_WRITE_EXTERNAL_STORAGE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -109,15 +110,27 @@ class PagerPhotoFragment : Fragment() {
             val saveUri = requireContext().contentResolver.insert(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 ContentValues()
-            )?: kotlin.run {
+            ) ?: kotlin.run {
                 Toast.makeText(requireContext(), "存储失败", Toast.LENGTH_SHORT).show()
                 return@withContext
             }
             requireContext().contentResolver.openOutputStream(saveUri).use {
-                if (bitmap.compress(Bitmap.CompressFormat.JPEG,90,it)) {
-                    MainScope().launch {Toast.makeText(requireContext(), "存储成功", Toast.LENGTH_SHORT).show() }
+                if (bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it)) {
+                    MainScope().launch {
+                        Toast.makeText(
+                            requireContext(),
+                            "存储成功",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 } else {
-                    MainScope().launch { Toast.makeText(requireContext(), "存储失败", Toast.LENGTH_SHORT).show() }
+                    MainScope().launch {
+                        Toast.makeText(
+                            requireContext(),
+                            "存储失败",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         }
