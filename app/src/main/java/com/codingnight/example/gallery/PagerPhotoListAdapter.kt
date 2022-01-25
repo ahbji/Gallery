@@ -52,7 +52,6 @@ class PagerPhotoListAdapter : ListAdapter<PhotoItem, PagerPhotoViewHolder>(DiffC
         }
         Glide.with(holder.itemView)
             .load(photoItem.fullUrl)
-            .placeholder(R.drawable.photo_placeholder)
             .listener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(
                     e: GlideException?,

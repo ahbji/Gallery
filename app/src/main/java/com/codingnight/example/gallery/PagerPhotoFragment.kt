@@ -56,7 +56,7 @@ class PagerPhotoFragment : Fragment() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
                 if (photoList != null) {
-                    photoTag.text = "${position + 1}/${photoList.size}"
+                    photoTag.text = getString(R.string.photo_tag, position + 1, photoList.size)
                 }
             }
         })
