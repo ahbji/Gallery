@@ -3,6 +3,7 @@ package com.codingnight.example.gallery
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -34,6 +35,9 @@ class GalleryFragment : Fragment() {
                 swipeLayoutGallery.isRefreshing = true
                 Handler(Looper.myLooper()!!).postDelayed({galleryViewModel.resetQuery() },1000)
             }
+            R.id.menuRetry -> {
+                galleryViewModel.retry()
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -58,5 +62,8 @@ class GalleryFragment : Fragment() {
         swipeLayoutGallery.setOnRefreshListener {
             Handler(Looper.myLooper()!!).postDelayed({galleryViewModel.resetQuery() },1000)
         }
+        galleryViewModel.networkStatus.observe((viewLifecycleOwner), Observer {
+            Log.d("GalleryFragment", "onViewCreated + $it ")
+        })
     }
 }
