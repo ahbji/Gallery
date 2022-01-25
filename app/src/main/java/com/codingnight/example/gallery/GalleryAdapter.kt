@@ -28,6 +28,10 @@ class GalleryAdapter(private val viewModel: GalleryViewModel) : PagedListAdapter
 
     private var hasFooter = false
 
+    init {
+        viewModel.retry()
+    }
+
     fun updateNetworkStatus(networkStatus: NetworkStatus?) {
         this.networkStatus = networkStatus
         if (networkStatus == NetworkStatus.INITIAL_LOADING) hideFooter() else showFooter()
@@ -65,7 +69,6 @@ class GalleryAdapter(private val viewModel: GalleryViewModel) : PagedListAdapter
             R.layout.gallery_cell -> PhotoViewHolder.newInstance(parent).also { holder ->
                 holder.itemView.setOnClickListener {
                     Bundle().apply {
-//                        putParcelableArrayList("PHOTO_LIST", ArrayList(currentList))
                         putInt("PHOTO_POSITION", holder.adapterPosition)
                         holder.itemView.findNavController()
                             .navigate(R.id.action_galleryFragment_to_pagerPhotoFragment, this)
