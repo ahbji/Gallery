@@ -3,7 +3,4 @@
     <item
         android:id="@+id/swipeIndicator"
         android:title="@string/swipe_to_refresh" />
-    <item
-        android:id="@+id/menuRetry"
-        android:title="@string/retry" />
 </menu>

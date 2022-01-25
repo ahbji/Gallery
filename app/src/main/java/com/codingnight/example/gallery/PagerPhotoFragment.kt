@@ -18,6 +18,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.get
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
@@ -29,6 +31,8 @@ import kotlinx.coroutines.withContext
 const val REQUEST_WRITE_EXTERNAL_STORAGE = 1
 
 class PagerPhotoFragment : Fragment() {
+    val galleryViewModel by activityViewModels<GalleryViewModel>()
+
     private lateinit var viewPager: ViewPager2
     private lateinit var photoTag: TextView
     private lateinit var saveButton: ImageView
@@ -46,22 +50,24 @@ class PagerPhotoFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val photoList = arguments?.getParcelableArrayList<PhotoItem>("PHOTO_LIST")
-        PagerPhotoListAdapter().apply {
-            viewPager.adapter = this
-            submitList(photoList)
-        }
+        val adapter = PagerPhotoListAdapter()
+        viewPager.adapter = adapter
+
+        galleryViewModel.pageListLiveData.observe(viewLifecycleOwner, {
+            adapter.submitList(it)
+            arguments?.getInt("PHOTO_POSITION")?.let { viewPager.setCurrentItem(it, false) }
+        })
 
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                if (photoList != null) {
-                    photoTag.text = getString(R.string.photo_tag, position + 1, photoList.size)
-                }
+                photoTag.text = getString(
+                    R.string.photo_tag,
+                    position + 1,
+                    galleryViewModel.pageListLiveData.value?.size
+                )
             }
         })
-
-        arguments?.getInt("PHOTO_POSITION")?.let { viewPager.setCurrentItem(it, false) }
 
         saveButton.setOnClickListener {
             if (Build.VERSION.SDK_INT < 29 && ContextCompat.checkSelfPermission(

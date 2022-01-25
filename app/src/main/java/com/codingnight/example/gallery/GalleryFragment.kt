@@ -6,6 +6,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
@@ -17,7 +18,7 @@ class GalleryFragment : Fragment() {
     private lateinit var swipeLayoutGallery: SwipeRefreshLayout
     private lateinit var recyclerView: RecyclerView
 
-    private val galleryViewModel by viewModels<GalleryViewModel>()
+    private val galleryViewModel by activityViewModels<GalleryViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,9 +36,6 @@ class GalleryFragment : Fragment() {
                 swipeLayoutGallery.isRefreshing = true
                 Handler(Looper.myLooper()!!).postDelayed({galleryViewModel.resetQuery() },1000)
             }
-            R.id.menuRetry -> {
-                galleryViewModel.retry()
-            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -50,20 +48,23 @@ class GalleryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
-        val galleryAdapter = GalleryAdapter()
+        val galleryAdapter = GalleryAdapter(galleryViewModel)
         recyclerView.apply {
             adapter = galleryAdapter
             layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         }
-        galleryViewModel.pageListLiveData.observe(viewLifecycleOwner, Observer {
+        galleryViewModel.pageListLiveData.observe(viewLifecycleOwner, {
             galleryAdapter.submitList(it)
-            swipeLayoutGallery.isRefreshing = false
         })
+
         swipeLayoutGallery.setOnRefreshListener {
             Handler(Looper.myLooper()!!).postDelayed({galleryViewModel.resetQuery() },1000)
         }
-        galleryViewModel.networkStatus.observe((viewLifecycleOwner), Observer {
+
+        galleryViewModel.networkStatus.observe((viewLifecycleOwner), {
             Log.d("GalleryFragment", "onViewCreated + $it ")
+            galleryAdapter.updateNetworkStatus(it)
+            swipeLayoutGallery.isRefreshing = it == NetworkStatus.INITIAL_LOADING
         })
     }
 }
