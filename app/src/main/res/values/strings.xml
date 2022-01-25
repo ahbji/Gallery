@@ -5,6 +5,7 @@
     <string name="swipe_to_refresh">swipe to refresh</string>
     <string name="todo">TODO</string>
     <string name="photo_tag">%d / %d</string>
+    <string name="retry">Retry</string>
     <string name="loading">Loading</string>
     <string name="load_complete">Load complete</string>
     <string name="net_error_with_click">Network Error, click to retry</string>

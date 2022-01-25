@@ -10,8 +10,8 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.navigation.findNavController
+import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.bumptech.glide.Glide
@@ -22,95 +22,111 @@ import com.bumptech.glide.request.target.Target
 import com.facebook.shimmer.Shimmer
 import com.facebook.shimmer.ShimmerFrameLayout
 
-class GalleryAdapter(private val viewModel: GalleryViewModel) :
-    ListAdapter<PhotoItem, RecyclerView.ViewHolder>(DIFFCALLBACK) {
+class GalleryAdapter(private val viewModel: GalleryViewModel) : PagedListAdapter<PhotoItem, RecyclerView.ViewHolder>(DIFFCALLBACK) {
 
-    private lateinit var mContext: Context
+    private var networkStatus: NetworkStatus? = null
 
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        super.onAttachedToRecyclerView(recyclerView)
-        mContext = recyclerView.context
+    private var hasFooter = false
+
+    init {
+        viewModel.retry()
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val holder: RecyclerView.ViewHolder
-        if (viewType == NORMAL_VIEW_TYPE) {
-            holder = ItemViewHolder(
-                LayoutInflater.from(parent.context).inflate(R.layout.gallery_cell, parent, false)
-            )
-            holder.itemView.setOnClickListener {
-                Bundle().apply {
-                    putParcelableArrayList("PHOTO_LIST", ArrayList(currentList))
-                    putInt("PHOTO_POSITION", holder.adapterPosition)
-                    holder.itemView.findNavController()
-                        .navigate(R.id.action_galleryFragment_to_pagerPhotoFragment, this)
-                }
-            }
-        } else {
-            holder = FooterViewHolder(
-                LayoutInflater.from(parent.context).inflate(R.layout.gallery_footer, parent, false))
-            (holder.itemView.layoutParams as StaggeredGridLayoutManager.LayoutParams).isFullSpan = true
-            holder.itemView.setOnClickListener {
-                holder.progressBar.visibility = View.VISIBLE
-                holder.textView.text = mContext.getString(R.string.loading)
-                viewModel.fetchData()
-            }
+    fun updateNetworkStatus(networkStatus: NetworkStatus?) {
+        this.networkStatus = networkStatus
+        if (networkStatus == NetworkStatus.INITIAL_LOADING) hideFooter() else showFooter()
+    }
+
+    private fun hideFooter() {
+        if (hasFooter) {
+            notifyItemRemoved(itemCount - 1)
         }
-        return holder
+        hasFooter = false
+    }
+
+    private fun showFooter() {
+        if (hasFooter) {
+            notifyItemChanged(itemCount - 1)
+        } else {
+            hasFooter = true
+            notifyItemInserted( itemCount - 1)
+        }
     }
 
     override fun getItemCount(): Int {
-        return super.getItemCount() + 1
+        return super.getItemCount() + if (hasFooter) 1 else 0
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (position == itemCount - 1)
-            FOOTER_VIEW_TYPE
+        return if (hasFooter && position == itemCount - 1)
+            R.layout.gallery_footer
         else
-            NORMAL_VIEW_TYPE
+            R.layout.gallery_cell
     }
 
-    companion object {
-        const val NORMAL_VIEW_TYPE = 0
-        const val FOOTER_VIEW_TYPE = 1
-    }
-
-    var footerViewStatus = DATA_STATUS_CAN_LOAD_MORE
-
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (position == itemCount - 1) {
-            holder as FooterViewHolder
-            with(holder) {
-                when (footerViewStatus) {
-                    DATA_STATUS_CAN_LOAD_MORE -> {
-                        progressBar.visibility = View.VISIBLE
-                        textView.text = mContext.getString(R.string.loading)
-                        itemView.isClickable = false
-                    }
-                    DATA_STATUS_NO_MORE -> {
-                        progressBar.visibility = View.GONE
-                        textView.text = mContext.getString(R.string.load_complete)
-                        itemView.isClickable = false
-                    }
-                    DATA_STATUS_NETWORK_ERROR -> {
-                        progressBar.visibility = View.GONE
-                        textView.text = mContext.getString(R.string.net_error_with_click)
-                        itemView.isClickable = true
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            R.layout.gallery_cell -> PhotoViewHolder.newInstance(parent).also { holder ->
+                holder.itemView.setOnClickListener {
+                    Bundle().apply {
+                        putInt("PHOTO_POSITION", holder.adapterPosition)
+                        holder.itemView.findNavController()
+                            .navigate(R.id.action_galleryFragment_to_pagerPhotoFragment, this)
                     }
                 }
             }
-            return
+            else -> FooterViewHolder.newInstance(parent).also { holder ->
+                holder.itemView.setOnClickListener {
+                    viewModel.retry()
+                }
+            }
         }
-        val photoItem = getItem(position)
-        holder as ItemViewHolder
-        with(holder) {
-            imageView.layoutParams.height = photoItem.photoHeight
-            textViewUser.text = photoItem.photoUser
-            textViewCollections.text = photoItem.photoCollections.toString()
-            textViewLikes.text = photoItem.photoLikes.toString()
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (holder.itemViewType) {
+            R.layout.gallery_footer -> (holder as FooterViewHolder).bindWithNetworkState(networkStatus)
+            else -> {
+                val photoItem = getItem(position) ?: return
+                (holder as PhotoViewHolder).bindWithPhotoItem(photoItem)
+            }
         }
+    }
+
+    object DIFFCALLBACK : DiffUtil.ItemCallback<PhotoItem>() {
+        override fun areItemsTheSame(oldItem: PhotoItem, newItem: PhotoItem): Boolean {
+            return oldItem === newItem
+        }
+
+        override fun areContentsTheSame(oldItem: PhotoItem, newItem: PhotoItem): Boolean {
+            return oldItem.photoId == newItem.photoId
+        }
+    }
+}
+
+class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    val shimmerViewCell: ShimmerFrameLayout = itemView.findViewById(R.id.shimmerViewCell)
+    val imageView: ImageView = itemView.findViewById(R.id.imageView)
+    val textViewUser: TextView = itemView.findViewById(R.id.textViewUser)
+    val textViewLikes: TextView = itemView.findViewById(R.id.textViewLikes)
+    val textViewCollections: TextView = itemView.findViewById(R.id.textViewCollections)
+
+    companion object {
+        fun newInstance(parent: ViewGroup): PhotoViewHolder {
+            val view =
+                LayoutInflater.from(parent.context).inflate(R.layout.gallery_cell, parent, false)
+            return PhotoViewHolder(view)
+        }
+    }
+
+    fun bindWithPhotoItem(photoItem: PhotoItem) {
+        imageView.layoutParams.height = photoItem.photoHeight
+        textViewUser.text = photoItem.photoUser
+        textViewCollections.text = photoItem.photoCollections.toString()
+        textViewLikes.text = photoItem.photoLikes.toString()
+
         val shimmerBuilder = Shimmer.ColorHighlightBuilder()
-        holder.shimmerViewCell.apply {
+        shimmerViewCell.apply {
             setShimmer(
                 shimmerBuilder
                     .setHighlightColor(0x55FFFFFF)
@@ -123,7 +139,7 @@ class GalleryAdapter(private val viewModel: GalleryViewModel) :
             startShimmer()
         }
 
-        Glide.with(holder.itemView)
+        Glide.with(itemView)
             .load(photoItem.fullUrl)
             .placeholder(R.drawable.photo_placeholder)
             .listener(object : RequestListener<Drawable> {
@@ -144,36 +160,47 @@ class GalleryAdapter(private val viewModel: GalleryViewModel) :
                     isFirstResource: Boolean
                 ): Boolean {
                     return false.also {
-                        holder.shimmerViewCell.setShimmer(null)
+                        shimmerViewCell.setShimmer(null)
                     }
                 }
 
             })
-            .into(holder.imageView)
-    }
-
-    object DIFFCALLBACK : DiffUtil.ItemCallback<PhotoItem>() {
-        override fun areItemsTheSame(oldItem: PhotoItem, newItem: PhotoItem): Boolean {
-            return oldItem.photoId == newItem.photoId
-        }
-
-        override fun areContentsTheSame(oldItem: PhotoItem, newItem: PhotoItem): Boolean {
-            // DataClass 重载 == 运算符实现了逐项比较
-            return oldItem == newItem
-        }
+            .into(imageView)
     }
 }
 
-
-class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    val shimmerViewCell: ShimmerFrameLayout = itemView.findViewById(R.id.shimmerViewCell)
-    val imageView: ImageView = itemView.findViewById(R.id.imageView)
-    val textViewUser: TextView = itemView.findViewById(R.id.textViewUser)
-    val textViewLikes: TextView = itemView.findViewById(R.id.textViewLikes)
-    val textViewCollections: TextView = itemView.findViewById(R.id.textViewCollections)
-}
-
-class FooterViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class FooterViewHolder(itemView: View, val context: Context) : RecyclerView.ViewHolder(itemView) {
     val progressBar: ProgressBar = itemView.findViewById(R.id.progressBar)
     val textView: TextView = itemView.findViewById(R.id.textView)
+
+    companion object {
+        fun newInstance(parent: ViewGroup): FooterViewHolder {
+            val view =
+                LayoutInflater.from(parent.context).inflate(R.layout.gallery_footer, parent, false)
+            (view.layoutParams as StaggeredGridLayoutManager.LayoutParams).isFullSpan = true
+            return FooterViewHolder(view, parent.context)
+        }
+    }
+
+    fun bindWithNetworkState(networkStatus: NetworkStatus?) {
+        with(itemView) {
+            when(networkStatus) {
+                NetworkStatus.FAILED -> {
+                    textView.text = context.getString(R.string.net_error_with_click)
+                    progressBar.visibility = View.GONE
+                    itemView.isClickable = true
+                }
+                NetworkStatus.COMPLETED -> {
+                    textView.text = context.getString(R.string.load_complete)
+                    progressBar.visibility = View.GONE
+                    itemView.isClickable = false
+                }
+                else -> {
+                    textView.text = context.getString(R.string.loading)
+                    progressBar.visibility = View.VISIBLE
+                    itemView.isClickable = false
+                }
+            }
+        }
+    }
 }
