@@ -20,7 +20,7 @@ class GalleryFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentGalleryBinding.inflate(layoutInflater)
+        binding = FragmentGalleryBinding.inflate(inflater)
         return binding.root
     }
 
