@@ -22,6 +22,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
+import com.codingnight.example.gallery.databinding.FragmentPagerPhotoBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -32,35 +33,30 @@ const val REQUEST_WRITE_EXTERNAL_STORAGE = 1
 class PagerPhotoFragment : Fragment() {
     val galleryViewModel by activityViewModels<GalleryViewModel>()
 
-    private lateinit var viewPager: ViewPager2
-    private lateinit var photoTag: TextView
-    private lateinit var saveButton: ImageView
+    private lateinit var binding: FragmentPagerPhotoBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val root = inflater.inflate(R.layout.fragment_pager_photo, container, false)
-        viewPager = root.findViewById(R.id.viewPager2)
-        photoTag = root.findViewById(R.id.photoTag)
-        saveButton = root.findViewById(R.id.saveButton)
-        return root
+    ): View {
+        binding = FragmentPagerPhotoBinding.inflate(inflater)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val adapter = PagerPhotoListAdapter()
-        viewPager.adapter = adapter
+        binding.viewPager.adapter = adapter
 
-        galleryViewModel.pageListLiveData.observe(viewLifecycleOwner, { pagedList ->
+        galleryViewModel.pageListLiveData.observe(viewLifecycleOwner) { pagedList ->
             adapter.submitList(pagedList)
-            arguments?.getInt("PHOTO_POSITION")?.let { viewPager.setCurrentItem(it, false) }
-        })
+            arguments?.getInt("PHOTO_POSITION")?.let { binding.viewPager.setCurrentItem(it, false) }
+        }
 
-        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                photoTag.text = getString(
+                binding.photoTag.text = getString(
                     R.string.photo_tag,
                     position + 1,
                     galleryViewModel.pageListLiveData.value?.size
@@ -68,7 +64,7 @@ class PagerPhotoFragment : Fragment() {
             }
         })
 
-        saveButton.setOnClickListener {
+        binding.saveButton.setOnClickListener {
             if (Build.VERSION.SDK_INT < 29 && ContextCompat.checkSelfPermission(
                     requireContext(),
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -108,7 +104,7 @@ class PagerPhotoFragment : Fragment() {
     private suspend fun savePhoto() {
         withContext(Dispatchers.IO) {
             val holder =
-                (viewPager[0] as RecyclerView).findViewHolderForAdapterPosition(viewPager.currentItem)
+                (binding.viewPager[0] as RecyclerView).findViewHolderForAdapterPosition(binding.viewPager.currentItem)
                         as PagerPhotoViewHolder
             val bitmap = holder.imageView.drawable.toBitmap()
 

@@ -19,6 +19,8 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.codingnight.example.gallery.databinding.GalleryCellBinding
+import com.codingnight.example.gallery.databinding.GalleryFooterBinding
 import com.facebook.shimmer.Shimmer
 import com.facebook.shimmer.ShimmerFrameLayout
 
@@ -104,29 +106,23 @@ class GalleryAdapter(private val viewModel: GalleryViewModel) : PagedListAdapter
     }
 }
 
-class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    val shimmerViewCell: ShimmerFrameLayout = itemView.findViewById(R.id.shimmerViewCell)
-    private val imageView: ImageView = itemView.findViewById(R.id.imageView)
-    private val textViewUser: TextView = itemView.findViewById(R.id.textViewUser)
-    private val textViewLikes: TextView = itemView.findViewById(R.id.textViewLikes)
-    private val textViewCollections: TextView = itemView.findViewById(R.id.textViewCollections)
+class PhotoViewHolder(private val mBinding: GalleryCellBinding) : RecyclerView.ViewHolder(mBinding.root) {
 
     companion object {
         fun newInstance(parent: ViewGroup): PhotoViewHolder {
-            val view =
-                LayoutInflater.from(parent.context).inflate(R.layout.gallery_cell, parent, false)
-            return PhotoViewHolder(view)
+            val binding = GalleryCellBinding.inflate(LayoutInflater.from(parent.context))
+            return PhotoViewHolder(binding)
         }
     }
 
     fun bindWithPhotoItem(photoItem: PhotoItem) {
-        imageView.layoutParams.height = photoItem.photoHeight
-        textViewUser.text = photoItem.photoUser
-        textViewCollections.text = photoItem.photoCollections.toString()
-        textViewLikes.text = photoItem.photoLikes.toString()
+        mBinding.imageView.layoutParams.height = photoItem.photoHeight
+        mBinding.textViewUser.text = photoItem.photoUser
+        mBinding.textViewCollections.text = photoItem.photoCollections.toString()
+        mBinding.textViewLikes.text = photoItem.photoLikes.toString()
 
         val shimmerBuilder = Shimmer.ColorHighlightBuilder()
-        shimmerViewCell.apply {
+        mBinding.shimmerViewCell.apply {
             setShimmer(
                 shimmerBuilder
                     .setHighlightColor(0x55FFFFFF)
@@ -160,16 +156,16 @@ class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                     isFirstResource: Boolean
                 ): Boolean {
                     return false.also {
-                        shimmerViewCell.setShimmer(null)
+                        mBinding.shimmerViewCell.setShimmer(null)
                     }
                 }
 
             })
-            .into(imageView)
+            .into(mBinding.imageView)
     }
 }
 
-class FooterViewHolder(itemView: View, val context: Context) : RecyclerView.ViewHolder(itemView) {
+class FooterViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val progressBar: ProgressBar = itemView.findViewById(R.id.progressBar)
     private val textView: TextView = itemView.findViewById(R.id.textView)
 
@@ -178,7 +174,7 @@ class FooterViewHolder(itemView: View, val context: Context) : RecyclerView.View
             val view =
                 LayoutInflater.from(parent.context).inflate(R.layout.gallery_footer, parent, false)
             (view.layoutParams as StaggeredGridLayoutManager.LayoutParams).isFullSpan = true
-            return FooterViewHolder(view, parent.context)
+            return FooterViewHolder(view)
         }
     }
 
