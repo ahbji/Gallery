@@ -1,12 +1,10 @@
 package com.codingnight.example.gallery
 
-import android.content.Context
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.navigation.findNavController
@@ -20,9 +18,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.codingnight.example.gallery.databinding.GalleryCellBinding
-import com.codingnight.example.gallery.databinding.GalleryFooterBinding
 import com.facebook.shimmer.Shimmer
-import com.facebook.shimmer.ShimmerFrameLayout
 
 class GalleryAdapter(private val viewModel: GalleryViewModel) : PagedListAdapter<PhotoItem, RecyclerView.ViewHolder>(DIFFCALLBACK) {
 
