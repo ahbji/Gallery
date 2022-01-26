@@ -47,18 +47,18 @@ class GalleryFragment : Fragment() {
             adapter = galleryAdapter
             layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         }
-        galleryViewModel.pageListLiveData.observe(viewLifecycleOwner, {
+        galleryViewModel.pageListLiveData.observe(viewLifecycleOwner) {
             galleryAdapter.submitList(it)
-        })
+        }
 
         binding.swipeLayoutGallery.setOnRefreshListener {
             Handler(Looper.myLooper()!!).postDelayed({galleryViewModel.resetQuery() },1000)
         }
 
-        galleryViewModel.networkStatus.observe((viewLifecycleOwner), {
+        galleryViewModel.networkStatus.observe((viewLifecycleOwner)) {
             Log.d("GalleryFragment", "onViewCreated + $it ")
             galleryAdapter.updateNetworkStatus(it)
             binding.swipeLayoutGallery.isRefreshing = it == NetworkStatus.INITIAL_LOADING
-        })
+        }
     }
 }
